@@ -5,13 +5,19 @@ class SimplexMethod:
     """Решение задачи линейного программирования в каноническом виде"""
     # Канонический вид это когда:
     # 1) решается задача поиска максимума целевой функции
-    # 2) неравенства принимают ввид <тут коэффициенты> <= <тут константа>
+    #           a1 * x1 + .. + an * xn -> max
+    # 2) неравенства принимают ввид <=
+    #           b11 * x1 + .. + b1n * xn <= c1
+    #                       ..
+    #           bn1 * x1 + .. + bnn * xn <= cn
+    # При добавлении коэффициэнтов в таблицу класса не надо производить никаких манипуляций с ними: так как они записаны
+    # в каноническом виде так их и заносим в таблицу класса
 
     def __init__(self, variables: int, inequalities: int) -> None:
         """В функции инициализации создается таблица, которая необходима для решения ЛП"""
         self.iter = 0
-        self.LeadingRow = 0
-        self.LeadingColumn = 0
+        self.LeadingRow = 0  # Разрешающая строка
+        self.LeadingColumn = 0  # Разрешающий столбец
 
         self.aVar = variables  # Amount of Variables
         self.aIne = inequalities  # Amount of Inequalities
@@ -32,8 +38,10 @@ class SimplexMethod:
         self.table[row_num + 1][self.aVar + row_num] = 1
         self.table[row_num + 1][-1] = int(list_of_elements[-1])
 
-    def run_simplex_method(self):
+    def run_simplex_method(self) -> None:
+        """Решает задачу"""
         while self.iter == 0:
+            # Ищем минимальный элемент в целевой функции, чтобы найти разрешающий столбец
             min_el = [self.table[0][0], 0]
             for i in range(self.aRow):
                 if self.table[0][i] < min_el[0] and self.table[0][i] < 0:
@@ -46,9 +54,10 @@ class SimplexMethod:
                 self.LeadingColumn = min_el[1]
                 self._check_have_inf_solutions()
 
-    def _check_have_inf_solutions(self):
+    def _check_have_inf_solutions(self) -> None:
+        """Здесь вроде как ошибки, пока не понимаю в чем;("""
         p = 1
-        for i in range(1, len(self.table)):
+        for i in range(1, self.aRow):
             if self.table[i][self.LeadingColumn] > 0:
                 p = 0
             else:
@@ -66,10 +75,10 @@ class SimplexMethod:
             self.LeadingRow = min_el[1]
             self._change_table()
 
-    def _change_table(self):
+    def _change_table(self) -> None:
+        """Меняет таблицу: делит, вычитает. Делает так, чтобы Разрешающий столбец стал базисом"""
         table = zeros((self.aRow, self.aCol))
-
-        lead_el = self.table[self.LeadingRow][self.LeadingColumn]  # Leading element - element on Leading Row and Leading Column
+        lead_el = self.table[self.LeadingRow][self.LeadingColumn]  # Leading element
         for i in range(self.aRow):
             if i != self.LeadingRow:
                 for j in range(self.aCol-1):
@@ -83,7 +92,7 @@ class SimplexMethod:
         self.table = table
 
     def get_table(self):
-        """просто выдает текущую таблицу"""
+        """Передает таблицу"""
         return self.table
 
     def get_max(self):
